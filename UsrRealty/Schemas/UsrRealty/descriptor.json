@@ -1,8 +1,8 @@
 ﻿{
   "Descriptor": {
-    "UId": "7f93f183-3413-496a-a89c-26022a9f3418",
+    "UId": "049102c0-bcda-42b9-9037-fe0ee8c242f9",
     "Name": "UsrRealty",
-    "ModifiedOnUtc": "\/Date(1756354650000)\/",
+    "ModifiedOnUtc": "\/Date(1756452805000)\/",
     "Parent": {
       "UId": "1bab9dcf-17d5-49f8-9536-8e0064f1dce0",
       "Name": "BaseEntity"
