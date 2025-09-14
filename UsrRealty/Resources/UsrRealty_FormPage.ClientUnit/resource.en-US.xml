@@ -21,8 +21,10 @@
 			<Item Name="LocalizableStrings.NumberInput_dg2ibgt_label.Value" Value="Number" />
 			<Item Name="LocalizableStrings.PriceCannotBeLess.Value" Value="Price cannot be less than 50.0 USD" />
 			<Item Name="LocalizableStrings.PushMeButton_caption.Value" Value="Push me!" />
+			<Item Name="LocalizableStrings.PushRealtyVisitsButton_caption.Value" Value="Push Realty Visits!" />
 			<Item Name="LocalizableStrings.RunAvgPriceMenuItem_caption.Value" Value="Run Average price calculation process" />
 			<Item Name="LocalizableStrings.RunMaxPriceWebServiceMenuItem_caption.Value" Value="Run web service to get Max price" />
+			<Item Name="LocalizableStrings.RunMinimumPriceRealtyWebService_caption.Value" Value="Minprice of realty" />
 		</Items>
 	</Group>
 </Resources>

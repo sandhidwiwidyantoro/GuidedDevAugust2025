@@ -51,6 +51,80 @@ define("UsrRealty_FormPage", /**SCHEMA_DEPS*/["@creatio-devkit/common"]/**SCHEMA
 			},
 			{
 				"operation": "insert",
+				"name": "FlexContainer_sjpxmwq",
+				"values": {
+					"type": "crt.FlexContainer",
+					"direction": "row",
+					"items": [],
+					"fitContent": true,
+					"visible": true,
+					"color": "transparent",
+					"borderRadius": "none",
+					"padding": {
+						"top": "none",
+						"right": "none",
+						"bottom": "none",
+						"left": "none"
+					},
+					"alignItems": "stretch",
+					"justifyContent": "end",
+					"gap": "small",
+					"wrap": "wrap"
+				},
+				"parentName": "MainHeader",
+				"propertyName": "items",
+				"index": 1
+			},
+			{
+				"operation": "insert",
+				"name": "RunMinimumPriceRealtyWebService",
+				"values": {
+					"type": "crt.Button",
+					"caption": "#ResourceString(RunMinimumPriceRealtyWebService_caption)#",
+					"color": "accent",
+					"disabled": false,
+					"size": "medium",
+					"iconPosition": "left-icon",
+					"visible": true,
+					"clicked": {
+						"request": "MinimumPriceOfRealtyRunWebServiceButtonRequest"
+					},
+					"clickMode": "default",
+					"icon": "settings-button-icon"
+				},
+				"parentName": "FlexContainer_sjpxmwq",
+				"propertyName": "items",
+				"index": 0
+			},
+			{
+				"operation": "insert",
+				"name": "PushRealtyVisitsButton",
+				"values": {
+					"type": "crt.Button",
+					"caption": "#ResourceString(PushRealtyVisitsButton_caption)#",
+					"color": "warn",
+					"disabled": false,
+					"size": "medium",
+					"iconPosition": "only-text",
+					"visible": true,
+					"clicked": {
+						"request": "crt.RunBusinessProcessRequest",
+						"params": {
+							"processName": "UsrAddRealtyVisitByButton",
+							"processRunType": "ForTheSelectedPage",
+							"saveAtProcessStart": true,
+							"showNotification": true,
+							"recordIdProcessParameterName": "RealtyId"
+						}
+					},
+					"clickMode": "default"
+				},
+				"parentName": "FlexContainer_sjpxmwq",
+				"propertyName": "items",
+				"index": 1
+			},
+			{
+				"operation": "insert",
 				"name": "Button_thggi5o",
 				"values": {
 					"type": "crt.Button",
@@ -281,7 +355,7 @@ define("UsrRealty_FormPage", /**SCHEMA_DEPS*/["@creatio-devkit/common"]/**SCHEMA
 					"labelPosition": "auto",
 					"control": "$PDS_UsrComment_9o0x3ey",
 					"multiline": false,
-					"visible": false,
+					"visible": true,
 					"readonly": false,
 					"placeholder": "",
 					"tooltip": ""
@@ -855,6 +929,11 @@ define("UsrRealty_FormPage", /**SCHEMA_DEPS*/["@creatio-devkit/common"]/**SCHEMA
 					"PDS_UsrComment_9o0x3ey": {
 						"modelConfig": {
 							"path": "PDS.UsrComment"
+						},
+						"validators": {
+							"required": {
+								"type": "crt.Required"
+							}
 						}
 					},
 					"PDS_UsrManager_cvx449p": {
@@ -1034,7 +1113,7 @@ define("UsrRealty_FormPage", /**SCHEMA_DEPS*/["@creatio-devkit/common"]/**SCHEMA
             // or percent changed
             var price = await request.$context.PDS_UsrPrice_1mymvk5;
             var percent = await request.$context.PDS_UsrOfferTypeUsrCommissionPercent_fb36qvi;
-            var commission = (price * percent) / 100 + 100; // 100 USD added!
+            var commission = (price * percent) / 100; 
             request.$context.PDS_UsrCommission_6f8cs0o = commission;
           }
           /* Call the next handler if it exists and return its result. */
@@ -1084,8 +1163,78 @@ define("UsrRealty_FormPage", /**SCHEMA_DEPS*/["@creatio-devkit/common"]/**SCHEMA
 					/* Call the next handler if it exists and return its result. */
 					return next?.handle(request);
 				}
-			}
-			
+			},
+		{		
+				request: "crt.HandleViewModelAttributeChangeRequest",
+		        /* The custom implementation of the base request handler. */
+		        handler: async (request, next) => {
+		            /* Check the request status. */
+		            if (request.attributeName === 'PDS_UsrPrice_1mymvk5') {
+						/* Create an instance of the system setting service from "@creatio-devkit/common." */
+			            var sysSettingsService = new sdk.SysSettingsService();
+						
+			            /* Retrieve the value of the "MinPriceToRequireRealtyComment" system setting. */
+		                var minPriceToRequireRealtyComment = (await sysSettingsService.getByCode('MinPriceToRequireRealtyComment')).value;	
+						
+						var currentPrice = await request.$context.PDS_UsrPrice_1mymvk5;
+		                var isPassMinPrice = currentPrice > minPriceToRequireRealtyComment;
+						
+						/* Check the request description. */
+		                if (isPassMinPrice) {
+		                    request.$context.enableAttributeValidator('PDS_UsrComment_9o0x3ey', 'required');
+		                } else {
+		                    request.$context.disableAttributeValidator('PDS_UsrComment_9o0x3ey', 'required');
+		                }
+		            }
+		            
+					/* Call the next handler if it exists and return its result. */
+		            return next?.handle(request);
+			        }
+			},
+			{
+				request: "MinimumPriceOfRealtyRunWebServiceButtonRequest",
+				/* Implementation of the custom query handler. */
+				handler: async (request, next) => {
+					console.log("Run web service Minimun Price Of Realty button works...");
+
+					// get id from type lookup type object
+					var typeObject = await request.$context.PDS_UsrType_w6gcaos;
+					var typeId = "";
+					if (typeObject) {
+						typeId = typeObject.value;
+					}
+
+					// get id from type lookup offer type object
+					var offerTypeObject = await request.$context.PDS_UsrOfferType_hxib12t;
+					var offerTypeId = "";
+					if (offerTypeObject) {
+						offerTypeId = offerTypeObject.value;
+					}
+					
+					/* Create an instance of the HTTP client from @creatio-devkit/common. */
+					const httpClientService = new sdk.HttpClientService();
+
+					/* Specify the URL to run web service method. */
+					const baseUrl = Terrasoft.utils.uri.getConfigurationWebServiceBaseUrl();
+					const transferName = "rest";
+					const serviceName = "RealtyService";
+					const methodName = "GetRealtyMinPriceByTypeIdAndOfferTypeId";
+					const endpoint = Terrasoft.combinePath(baseUrl, transferName, serviceName, methodName);
+
+					//const endpoint = "http://localhost/Creatio-Assigment/0/rest/RealtyService/GetRealtyMinPriceByTypeIdAndOfferTypeId";
+					/* Send a POST HTTP request. The HTTP client converts the response body from JSON to a JS object automatically. */
+					var params = {
+						realtyTypeId: typeId,
+						realtyOfferTypeId: offerTypeId
+					};
+					const response = await httpClientService.post(endpoint, params);
+					
+					console.log("Response min realty price = " + response.body.GetRealtyMinPriceByTypeIdAndOfferTypeIdResult);
+					
+					/* Call the next handler if it exists and return its result. */
+					return next?.handle(request);
+				}
+			}			
     ] /**SCHEMA_HANDLERS*/,
 		converters: /**SCHEMA_CONVERTERS*/ {} /**SCHEMA_CONVERTERS*/,
 		validators: /**SCHEMA_VALIDATORS*/ {
